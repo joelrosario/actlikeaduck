@@ -36,8 +36,10 @@ var stub = exports.stub = function(o) {
 
 	function stubCallAndParams(fn, params) {
 		stubs[fn] = {
-			params: params
 		};
+		
+		if(params != 'undefined')
+			stubs[fn].params = params;
 	}
 
 	return {
@@ -78,6 +80,34 @@ var stub = exports.stub = function(o) {
 			
 			stubs[this.fn].callback = callbackSpec;
 			
+			return this;
+		},
+		
+		withArgs: function () {
+			stubs[this.fn].params = argstoarray(arguments);
+			return this;
+		},
+		
+		expect: function(fn) {
+			stubCallAndParams(fn);
+
+			o[fn] = function() {
+				actualArgumentsShouldBeExpected(fn, stubs[fn].params, arguments);
+
+				if(stubs[fn].callback != undefined) {
+					arguments[stubs[fn].callback.index].apply(null, stubs[fn].callback.params);
+				}
+
+				var returnValue = undefined;
+
+				if(stubs[fn].returnValue != undefined)
+					returnValue = stubs[fn].returnValue;
+
+				if(returnValue != undefined)
+					return returnValue;
+			}
+
+			this.fn = fn;
 			return this;
 		}
 	};

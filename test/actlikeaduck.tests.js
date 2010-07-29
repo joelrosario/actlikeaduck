@@ -45,6 +45,9 @@ exports['Stub frog to croak.'] = function () {
 	var frog = {};
 	actlikeaduck.stub(frog).expectCall("sound", "croak").andReturn("it croaks");
 	assert.equal("it croaks", frog.sound("croak"));
+
+	actlikeaduck.stub(frog).expect("sound").withArgs("croak").andReturn("it croaks");
+	assert.equal("it croaks", frog.sound("croak"));
 }
 
 exports['A stubbed frog can croak any number of times.'] = function () {
