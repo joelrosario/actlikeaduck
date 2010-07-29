@@ -25,7 +25,7 @@ function actualArgumentsShouldBeExpected(fn, expected, actual) {
 	for(var i in actual) {
 		if(actual[i] != expected[i] && (typeof actual[i]) != 'function' && (typeof expected[i]) != 'function')
 		{
-			var ex = "Unexpected arguments to function '" + fn + "'\nExpected args: " + tostr(expected) + "\nActual args: " + tostr(actual) + "\n";
+			var ex = "Unexpected arguments to function '" + fn + "'\nExpected args (" + expected.length + "): " + tostr(expected) + "\nActual args (" + actual.length + "): " + tostr(actual) + "\n";
 			throw new Error(ex);
 		}
 	}
@@ -45,26 +45,7 @@ var stub = exports.stub = function(o) {
 	return {
 		expectCall: function(fn) {
 			var params = (arguments.length > 1 ? argstoarray(arguments).splice(1) : []);
-			stubCallAndParams(fn, params);
-
-			o[fn] = function() {
-				actualArgumentsShouldBeExpected(fn, stubs[fn].params, arguments);
-
-				if(stubs[fn].callback != undefined) {
-					arguments[stubs[fn].callback.index].apply(null, stubs[fn].callback.params);
-				}
-
-				var returnValue = undefined;
-
-				if(stubs[fn].returnValue != undefined)
-					returnValue = stubs[fn].returnValue;
-
-				if(returnValue != undefined)
-					return returnValue;
-			}
-
-			this.fn = fn;
-			return this;
+			return this.expect(fn).withArgs.apply(this, params);
 		},
 
 		andReturn: function(val) {
@@ -92,7 +73,7 @@ var stub = exports.stub = function(o) {
 			stubCallAndParams(fn);
 
 			o[fn] = function() {
-				actualArgumentsShouldBeExpected(fn, stubs[fn].params, arguments);
+				actualArgumentsShouldBeExpected(fn, stubs[fn].params, argstoarray(arguments));
 
 				if(stubs[fn].callback != undefined) {
 					arguments[stubs[fn].callback.index].apply(null, stubs[fn].callback.params);
