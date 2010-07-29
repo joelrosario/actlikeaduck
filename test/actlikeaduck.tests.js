@@ -12,8 +12,8 @@ exports['Mock duck to quack.'] = function () {
 	actlikeaduck.mock(duck).expectCall("sound", "quacks").andReturn("it quacks");
 	assert.equal("it quacks", duck.sound("quacks"));
 
-	actlikeaduck.mock(duck).expect("sound").withArgs("quacks").andReturn("it quacks");
-	assert.equal("it quacks", duck.sound("quacks"));
+	actlikeaduck.mock(duck).expect("sound").withArgs({is: "quacks"}).andReturn("it quacks");
+	assert.equal("it quacks", duck.sound({is: "quacks"}));
 }
 
 exports['A mocked duck can quack only as many times as the quack call has been mocked'] = function () {

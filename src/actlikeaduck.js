@@ -1,5 +1,28 @@
 var sys = require('sys');
 
+function deepEquals(x, y)
+{
+    for(p in y)
+    {
+        switch(typeof(y[p]))
+        {
+                case 'object':
+                        if (!y[p].equals(x[p])) { return false }; break;
+                case 'function':
+                        if (typeof(x[p])=='undefined' || (p != 'equals' && y[p].toString() != x[p].toString())) { return false; }; break;
+                default:
+                        if (y[p] != x[p]) { return false; }
+        }
+    }
+
+    for(p in x)
+    {
+        if(typeof(y[p])=='undefined') {return false;}
+    }
+
+    return true;
+}
+
 function tostr(arr) {
 	var str = "";
 	
@@ -22,10 +45,8 @@ function argstoarray(args) {
 }
 
 function actualArgumentsShouldBeExpected(fn, expected, actual) {
-	sys.puts(expected);
-	sys.puts(actual);
 	for(var i in actual) {
-		if(actual[i] != expected[i] && (typeof actual[i]) != 'function' && (typeof expected[i]) != 'function')
+		if((typeof actual[i]) != 'function' && (typeof expected[i]) != 'function' && !deepEquals(actual[i], expected[i]))
 		{
 			var ex = "Unexpected arguments to function '" + fn + "'\nExpected args (" + expected.length + "): " + tostr(expected) + "\nActual args (" + actual.length + "): " + tostr(actual) + "\n";
 			throw new Error(ex);
