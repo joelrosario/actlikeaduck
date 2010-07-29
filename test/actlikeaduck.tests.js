@@ -53,6 +53,14 @@ exports['A mocked operation to readContents should call the callback function pa
 	assert.ok(called);
 }
 
+exports['A mock object should be available from the stub repo.'] = function () {
+	var file = {};
+	var called = false;
+
+	var mockRepo = actlikeaduck.mock(file).expectCall("readContents", "testfile.txt", function() { }).executeCallback(1, null, "hello world");
+		assert.deepEqual(file, mockRepo.mockedObj);
+}
+
 exports['Stub frog to croak.'] = function () {
 	var frog = {};
 	actlikeaduck.stub(frog).expectCall("sound", "croak").andReturn("it croaks");
@@ -76,4 +84,12 @@ exports['A stubbed operation to readContents should call the callback function p
 	actlikeaduck.stub(file).expectCall("readContents", "testfile.txt", function() { }).executeCallback(1, null, "hello world");
 	file.readContents("testfile.txt", function(err, data) { assert.equal(null, err); assert.equal("hello world", data); called = true; });
 	assert.ok(called);
+}
+
+exports['A stubbed object should be available from the stub repo.'] = function () {
+	var file = {};
+	var called = false;
+
+	var stubRepo = actlikeaduck.stub(file).expectCall("readContents", "testfile.txt", function() { }).executeCallback(1, null, "hello world");
+	assert.deepEqual(file, stubRepo.stubbedObj);
 }

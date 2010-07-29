@@ -43,6 +43,8 @@ var stub = exports.stub = function(o) {
 	}
 
 	return {
+		stubbedObj: o,
+		
 		expectCall: function(fn) {
 			var params = (arguments.length > 1 ? argstoarray(arguments).splice(1) : []);
 			return this.expect(fn).withArgs.apply(this, params);
@@ -106,6 +108,8 @@ var mock = exports.mock = function (o) {
 	}
 
 	return {
+		mockedObj: o,
+		
 		expectCall: function(fn) {
 			var params = (arguments.length > 1 ? argstoarray(arguments).splice(1) : []);
 			return this.expect(fn).withArgs.apply(this, params);
