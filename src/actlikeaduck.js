@@ -142,6 +142,10 @@ var mock = exports.mock = function (o) {
 
 				actualArgumentsShouldBeExpected(fn, expectations[fn][0].params, arguments);
 				
+				if(expectations[fn][0].callback != undefined) {
+					arguments[expectations[fn][0].callback.index].apply(null, expectations[fn][0].callback.params);
+				}
+				
 				var returnValue = undefined;
 				
 				if(expectations[fn][0].returnValue != undefined)
@@ -159,6 +163,17 @@ var mock = exports.mock = function (o) {
 		andReturn: function(val) {
 			var callExpectations = expectations[this.fn];
 			expectations[this.fn][callExpectations.length - 1].returnValue = val;
+			return this;
+		},
+		
+		executeCallback: function(indexOfCallback) {
+			var callbackSpec = {
+				index: indexOfCallback,
+				params: (arguments.length > 1 ? argstoarray(arguments).splice(1) : [])
+			};
+			
+			expectations[this.fn][expectations[this.fn].length - 1].callback = callbackSpec;
+			
 			return this;
 		}
 	};

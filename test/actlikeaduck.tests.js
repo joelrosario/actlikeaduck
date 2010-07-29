@@ -41,6 +41,15 @@ exports['All mocked expectations must be called.'] = function () {
 	}
 }
 
+exports['A mocked operation to readContents should call the callback function passed to it as the second argument.'] = function () {
+	var file = {};
+	var called = false;
+
+	actlikeaduck.mock(file).expectCall("readContents", "testfile.txt", function() { }).executeCallback(1, null, "hello world");
+	file.readContents("testfile.txt", function(err, data) { assert.equal(null, err); assert.equal("hello world", data); called = true; });
+	assert.ok(called);
+}
+
 exports['Stub frog to croak.'] = function () {
 	var frog = {};
 	actlikeaduck.stub(frog).expectCall("sound", "croak").andReturn("it croaks");
