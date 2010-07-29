@@ -22,6 +22,8 @@ function argstoarray(args) {
 }
 
 function actualArgumentsShouldBeExpected(fn, expected, actual) {
+	sys.puts(expected);
+	sys.puts(actual);
 	for(var i in actual) {
 		if(actual[i] != expected[i] && (typeof actual[i]) != 'function' && (typeof expected[i]) != 'function')
 		{
@@ -138,7 +140,7 @@ var mock = exports.mock = function (o) {
 		},
 
 		expect: function(fn) {
-			expectCallAndParams(fn);
+			expectCallAndParams(fn, []);
 			this.fn = fn;
 
 			o[fn] = function () {
