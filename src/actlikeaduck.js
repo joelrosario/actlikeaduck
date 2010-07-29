@@ -1,23 +1,18 @@
 var sys = require('sys');
 
-function deepEquals(x, y)
+function deepEquals(actual, expected)
 {
-    for(p in y)
+    for(p in expected)
     {
-        switch(typeof(y[p]))
+        switch(typeof(expected[p]))
         {
                 case 'object':
-                        if (!y[p].equals(x[p])) { return false }; break;
+                        if (!deepEquals(actual[p], expected[p])) { return false }; break;
                 case 'function':
-                        if (typeof(x[p])=='undefined' || (p != 'equals' && y[p].toString() != x[p].toString())) { return false; }; break;
+                        if (typeof(actual[p])=='undefined' || (p != 'equals' && expected[p].toString() != actual[p].toString())) { return false; }; break;
                 default:
-                        if (y[p] != x[p]) { return false; }
+                        if (expected[p] != actual[p]) { return false; }
         }
-    }
-
-    for(p in x)
-    {
-        if(typeof(y[p])=='undefined') {return false;}
     }
 
     return true;
