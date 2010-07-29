@@ -105,31 +105,6 @@ var mock = exports.mock = function (o) {
 		};
 	}
 
-	o['verifyMockedCalls'] = function () {
-		var unInvokedExpectations = '';
-		
-		for(var fn in expectations) {
-			if(expectations[fn].length > 0) {
-				if (unInvokedExpectations.length == 0)
-					unInvokedExpectations += "The following calls were not received on an object:";
-				
-				unInvokedExpectations += "\n";
-				
-				unInvokedExpectations += "Function: " + fn + "\n";
-				
-				for(var ctr in expectations[fn]) {
-					unInvokedExpectations +=  "  Parameters: " + tostr(expectations[fn][ctr].params);
-					if(expectations[fn][ctr].returnValue != undefined)
-						unInvokedExpectations += "\n    Returns: " + expectations[fn][ctr].returnValue;
-					unInvokedExpectations += "\n";
-				}
-			}
-		}
-
-		if(unInvokedExpectations.length > 0)
-			throw new Error(unInvokedExpectations);
-	}
-
 	return {
 		expectCall: function(fn) {
 			var params = (arguments.length > 1 ? argstoarray(arguments).splice(1) : []);
@@ -184,6 +159,33 @@ var mock = exports.mock = function (o) {
 			}
 			
 			return this;
+		},
+		
+		verifyMockedCalls: function () {
+			var fn = this.fn;
+
+			var unInvokedExpectations = '';
+
+			for(var fn in expectations) {
+				if(expectations[fn].length > 0) {
+					if (unInvokedExpectations.length == 0)
+						unInvokedExpectations += "The following calls were not received on an object:";
+
+					unInvokedExpectations += "\n";
+
+					unInvokedExpectations += "Function: " + fn + "\n";
+
+					for(var ctr in expectations[fn]) {
+						unInvokedExpectations +=  "  Parameters: " + tostr(expectations[fn][ctr].params);
+						if(expectations[fn][ctr].returnValue != undefined)
+							unInvokedExpectations += "\n    Returns: " + expectations[fn][ctr].returnValue;
+						unInvokedExpectations += "\n";
+					}
+				}
+			}
+
+			if(unInvokedExpectations.length > 0)
+				throw new Error(unInvokedExpectations);
 		}
 	};
 }

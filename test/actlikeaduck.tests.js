@@ -30,14 +30,14 @@ exports['A mocked duck can quack only as many times as the quack call has been m
 
 exports['All mocked expectations must be called.'] = function () {
 	var duck = {};
-	actlikeaduck.mock(duck)
+	var mockRepo = actlikeaduck.mock(duck)
 		.expectCall("sound", "quacks").andReturn("it quacks")
 		.expectCall("sound", "quacks").andReturn("it quacks")
 		.expectCall("sound", "squeaks").andReturn("itSqueaks");
 
 	duck.sound("quacks");
 
-	try { duck.verifyMockedCalls(); } catch(e) {
+	try { mockRepo.verifyMockedCalls(); } catch(e) {
 		["sound", "quacks", "squeaks"].forEach(function (token) {
 			assert.ok(e.message.indexOf(token) > -1);
 		});
