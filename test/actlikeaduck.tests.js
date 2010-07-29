@@ -57,7 +57,7 @@ exports['A stubbed frog can croak any number of times.'] = function () {
 	assert.equal("it croaks", frog.sound("croak"));
 }
 
-exports['A stubbed operation to readContents should call the callback function passed to it as the third argument.'] = function () {
+exports['A stubbed operation to readContents should call the callback function passed to it as the second argument.'] = function () {
 	var file = {};
 	var called = false;
 
