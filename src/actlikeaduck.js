@@ -23,7 +23,7 @@ function argstoarray(args) {
 
 function actualArgumentsShouldBeExpected(fn, expected, actual) {
 	for(var i in actual) {
-		if(actual[i] != expected[i])
+		if(actual[i] != expected[i] && (typeof actual[i]) != 'function' && (typeof expected[i]) != 'function')
 		{
 			var ex = "Unexpected arguments to function '" + fn + "'\nExpected args: " + tostr(expected) + "\nActual args: " + tostr(actual) + "\n";
 			throw new Error(ex);
@@ -48,6 +48,10 @@ var stub = exports.stub = function(o) {
 			o[fn] = function() {
 				actualArgumentsShouldBeExpected(fn, stubs[fn].params, arguments);
 
+				if(stubs[fn].callback != undefined) {
+					arguments[stubs[fn].callback.index].apply(null, stubs[fn].callback.params);
+				}
+
 				var returnValue = undefined;
 
 				if(stubs[fn].returnValue != undefined)
@@ -63,6 +67,17 @@ var stub = exports.stub = function(o) {
 
 		andReturn: function(val) {
 			stubs[this.fn].returnValue = val;
+			return this;
+		},
+		
+		executeCallback: function(indexOfCallback) {
+			var callbackSpec = {
+				index: indexOfCallback,
+				params: (arguments.length > 1 ? argstoarray(arguments).splice(1) : [])
+			};
+			
+			stubs[this.fn].callback = callbackSpec;
+			
 			return this;
 		}
 	};

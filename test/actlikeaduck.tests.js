@@ -53,3 +53,12 @@ exports['A stubbed frog can croak any number of times.'] = function () {
 	assert.equal("it croaks", frog.sound("croak"));
 	assert.equal("it croaks", frog.sound("croak"));
 }
+
+exports['A stubbed operation to readContents should call the callback function passed to it as the third argument.'] = function () {
+	var file = {};
+	var called = false;
+
+	actlikeaduck.stub(file).expectCall("readContents", "testfile.txt", function() { }).executeCallback(1, null, "hello world");
+	file.readContents("testfile.txt", function(err, data) { assert.equal(null, err); assert.equal("hello world", data); called = true; });
+	assert.ok(called);
+}
