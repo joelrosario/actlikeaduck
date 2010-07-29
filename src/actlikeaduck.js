@@ -133,31 +133,7 @@ var mock = exports.mock = function (o) {
 	return {
 		expectCall: function(fn) {
 			var params = (arguments.length > 1 ? argstoarray(arguments).splice(1) : []);
-			expectCallAndParams(fn, params);
-			this.fn = fn;
-
-			o[fn] = function () {
-				if(expectations[fn] == undefined || expectations[fn].length == 0)
-					throw new Error("Unexpected call to " + fn + " with arguments " + tostr(arguments));
-
-				actualArgumentsShouldBeExpected(fn, expectations[fn][0].params, arguments);
-				
-				if(expectations[fn][0].callback != undefined) {
-					arguments[expectations[fn][0].callback.index].apply(null, expectations[fn][0].callback.params);
-				}
-				
-				var returnValue = undefined;
-				
-				if(expectations[fn][0].returnValue != undefined)
-					returnValue = expectations[fn][0].returnValue;
-
-				expectations[fn].shift();
-				
-				if(returnValue != undefined)
-					return returnValue;
-			}
-			
-			return this;
+			return this.expect(fn).withArgs.apply(this, params);
 		},
 		
 		andReturn: function(val) {
@@ -173,6 +149,39 @@ var mock = exports.mock = function (o) {
 			};
 			
 			expectations[this.fn][expectations[this.fn].length - 1].callback = callbackSpec;
+			
+			return this;
+		},
+
+		withArgs: function () {
+			expectations[this.fn][expectations[this.fn].length - 1].params = argstoarray(arguments);
+			return this;
+		},
+
+		expect: function(fn) {
+			expectCallAndParams(fn);
+			this.fn = fn;
+
+			o[fn] = function () {
+				if(expectations[fn] == undefined || expectations[fn].length == 0)
+					throw new Error("Unexpected call to " + fn + " with arguments " + tostr(arguments));
+
+				actualArgumentsShouldBeExpected(fn, expectations[fn][0].params, arguments);
+
+				if(expectations[fn][0].callback != undefined) {
+					arguments[expectations[fn][0].callback.index].apply(null, expectations[fn][0].callback.params);
+				}
+
+				var returnValue = undefined;
+
+				if(expectations[fn][0].returnValue != undefined)
+					returnValue = expectations[fn][0].returnValue;
+
+				expectations[fn].shift();
+				
+				if(returnValue != undefined)
+					return returnValue;
+			}
 			
 			return this;
 		}
