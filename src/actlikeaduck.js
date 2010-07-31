@@ -55,7 +55,7 @@ function actualArgumentsShouldBeExpected(fn, expected, actual) {
 	for(var i in actual) {
 		if((typeof actual[i]) != 'function' && (typeof expected[i]) != 'function' && !deepEquals(actual[i], expected[i]))
 		{
-			var ex = "Unexpected arguments to function '" + fn + "'\nExpected args (" + expected.length + "): " + tostr(expected) + "\nActual args (" + actual.length + "): " + tostr(actual) + "\n";
+			var ex = "Unexpected arguments to function '" + fn + "'\nExpected " + expected.length + " arg(s): " + tostr(expected) + "\nReceived " + actual.length + " arg(s): " + tostr(actual) + "\n";
 			throw new Error(ex);
 		}
 	}
