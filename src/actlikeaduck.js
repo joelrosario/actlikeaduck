@@ -51,25 +51,40 @@ function argstoarray(args) {
 	return arr;
 }
 
-function actualArgumentsShouldBeExpected(fn, expected, actual) {
+function argumentsMatch(expected, actual, responseForUnmatchedArguments) {
+	var matched = true;
+	
 	for(var i in actual) {
-		if((typeof actual[i]) != 'function' && (typeof expected[i]) != 'function' && !deepEquals(actual[i], expected[i]))
-		{
-			var ex = "Unexpected arguments to function '" + fn + "'\nExpected " + expected.length + " arg(s): " + tostr(expected) + "\nReceived " + actual.length + " arg(s): " + tostr(actual) + "\n";
-			throw new Error(ex);
+		if((typeof actual[i]) != 'function' && (typeof expected[i]) != 'function' && !deepEquals(actual[i], expected[i])) {
+			if(responseForUnmatchedArguments)
+				responseForUnmatchedArguments();
+
+			matched = false;
 		}
 	}
+	
+	return matched;
+}
+
+function actualArgumentsShouldBeExpected(fn, expected, actual) {
+	argumentsMatch(expected, actual,
+		function() {
+			var ex = "Unexpected arguments to function '" + fn + "'\nExpected " + expected.length + " arg(s): " + tostr(expected) + "\nReceived " + actual.length + " arg(s): " + tostr(actual) + "\n";
+			throw new Error(ex);
+		});
 }
 
 var stub = exports.stub = function(o) {
 	var stubs = {};
 
 	function stubCallAndParams(fn, params) {
-		stubs[fn] = {
-		};
+		if(stubs[fn] == undefined)
+			stubs[fn] = [];
+		
+		stubs[fn][stubs[fn].length] = {};
 		
 		if(params != 'undefined')
-			stubs[fn].params = params;
+			stubs[fn][stubs[fn].length - 1].params = params;
 	}
 
 	return {
@@ -81,7 +96,7 @@ var stub = exports.stub = function(o) {
 		},
 
 		andReturn: function(val) {
-			stubs[this.fn].returnValue = val;
+			this.lastStub().returnValue = val;
 			return this;
 		},
 		
@@ -91,35 +106,52 @@ var stub = exports.stub = function(o) {
 				params: (arguments.length > 1 ? argstoarray(arguments).splice(1) : [])
 			};
 			
-			stubs[this.fn].callback = callbackSpec;
+			this.lastStub().callback = callbackSpec;
 			
 			return this;
 		},
 		
 		withArgs: function () {
-			stubs[this.fn].params = argstoarray(arguments);
+			this.lastStub().params = argstoarray(arguments);
 			return this;
+		},
+		
+		findStub: function(args) {
+			for(var ctr in stubs[this.fn]) {
+				var stub = stubs[this.fn][ctr];
+				
+				if(argumentsMatch(stub.params, args)) {
+					return stub;
+				}
+			}
 		},
 		
 		expect: function(fn) {
 			stubCallAndParams(fn);
 
-			o[fn] = function() {
-				actualArgumentsShouldBeExpected(fn, stubs[fn].params, argstoarray(arguments));
+			var self = this;
 
-				if(stubs[fn].callback != undefined) {
-					arguments[stubs[fn].callback.index].apply(null, stubs[fn].callback.params);
+			o[fn] = function() {
+				var stub = self.findStub(argstoarray(arguments));
+				actualArgumentsShouldBeExpected(fn, stub.params, argstoarray(arguments));
+
+				if(stub.callback != undefined) {
+					arguments[stub.callback.index].apply(null, stub.callback.params);
 				}
 
 				var returnValue = undefined;
 
-				if(stubs[fn].returnValue != undefined)
-					returnValue = stubs[fn].returnValue;
+				if(stub.returnValue != undefined)
+					returnValue = self.lastStub().returnValue;
 
 				if(returnValue != undefined)
 					return returnValue;
-			}
+			};
 
+			this.lastStub = function() {
+				return stubs[fn][stubs[fn].length - 1];
+			};
+			
 			this.fn = fn;
 			return this;
 		}
