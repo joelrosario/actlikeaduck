@@ -168,6 +168,36 @@ exports['An operation may be stubbed out with different responses for different 
 	assert.equal(2, called);
 };
 
+exports['Different operations may be stubbed out at the same time.'] = function () {
+	var file = {};
+	var called = 0;
+
+	actlikeaduck.stub(file)
+		.expect("readContents").withArgs("testfile.txt", function() { }).executeCallback(1, null, "hello world").andReturn(true)
+		.expect("readContents").withArgs("testfile2.txt", function() { }).executeCallback(1, null, "hello world 2").andReturn(true)
+		.expect("stat").withArgs("testfile.txt", function () { }).executeCallback(1, undefined, "file");
+
+	assert.ok(file.readContents("testfile.txt", function(err, data) { assert.equal(null, err); assert.equal("hello world", data); called++; }));
+	assert.ok(file.readContents("testfile2.txt", function(err, data) { assert.equal(null, err); assert.equal("hello world 2", data); called++; }));
+	file.stat("testfile.txt", function(err, data) { assert.equal("file", data); });
+	
+	assert.equal(2, called);
+
+	var fakeFileSystem = actlikeaduck.stub({})
+			.expect("stat").withArgs("./test.html", function() {}).executeCallback(1,
+																	undefined, actlikeaduck.stub({})
+																		.expect("isDirectory").andReturn(false)
+																		.expect("isFile").andReturn(true)
+																		.stubbedObj)
+			.expect("readFile").withArgs("./test.html", "utf-8", function() {}).executeCallback(1, undefined, "test data")
+			.stubbedObj;
+
+	fakeFileSystem.stat("./test.html", function(err, stats) {
+		assert.ok(stats.hasOwnProperty('isDirectory'));
+		assert.ok(stats.hasOwnProperty('isFile'));
+	});
+};
+
 exports['An operation may be stubbed out with a default response.'] = function () {
 	var file = {};
 	var called = false;

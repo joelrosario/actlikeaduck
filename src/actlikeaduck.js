@@ -85,7 +85,7 @@ var stub = exports.stub = function(o) {
 		
 		stubs[fn].list[stubs[fn].list.length] = { params: [] };
 		
-		if(params != 'undefined')
+		if(params != undefined)
 			stubs[fn].list[stubs[fn].list.length - 1].params = params;
 	}
 
@@ -120,45 +120,48 @@ var stub = exports.stub = function(o) {
 		
 		andThrow: function (e) {
 			this.lastStub().exception = e;
+			return this;
 		},
 		
-		defaultStub: function () {
-			return stubs[this.fn].defaultStub;
+		defaultStub: function (fn) {
+			return stubs[fn].defaultStub;
 		},
 
-		setDefaultStub: function (stub) {
-			stubs[this.fn].defaultStub = stub;
+		setDefaultStub: function (fn, stub) {
+			stubs[fn].defaultStub = stub;
 		},
 		
-		withUnexpectedArgs: function (fn) {
-			if(this.defaultStub() == undefined) {
-				this.setDefaultStub({params: [], isStub: true});
+		withUnexpectedArgs: function () {
+			if(this.defaultStub(this.fn) == undefined) {
+				this.setDefaultStub(this.fn, {params: [], isDefaultStub: true});
 			}
 
 			delete stubs[this.fn].list[stubs[this.fn].list.length - 1];
 			stubs[this.fn].list.length = stubs[this.fn].list.length - 1;
 			
+			var fn = this.fn;
+			
 			this.lastStub = function () {
-				return this.defaultStub();
+			 	return this.defaultStub(fn);
 			};
 			
 			return this;
 		},
 		
-		findStub: function(args) {
-			for(var ctr = 0; ctr < stubs[this.fn].list.length; ctr ++) {
-				var stub = stubs[this.fn].list[ctr];
+		findStub: function(fn, args) {
+			for(var ctr = 0; ctr < stubs[fn].list.length; ctr ++) {
+				var stub = stubs[fn].list[ctr];
 				
 				if(argumentsMatch(stub.params, args)) {
 					return stub;
 				}
 			}
 			
-			if(this.defaultStub() == 'undefined') {
-				throw new Error('No stub found for function ' + this.fn + ' with args ' + tostr(args));
+			if(this.defaultStub(fn) == undefined) {
+				throw new Error('No stub found for function ' + fn + ' with args ' + tostr(args));
 			}
 			
-			return this.defaultStub();
+			return this.defaultStub(fn);
 		},
 		
 		expect: function(fn) {
@@ -166,10 +169,14 @@ var stub = exports.stub = function(o) {
 
 			var self = this;
 
+			this.lastStub = function() {
+				return stubs[fn].list[stubs[fn].list.length - 1];
+			};
+			
 			o[fn] = function() {
-				var stub = self.findStub(argstoarray(arguments));
+				var stub = self.findStub(fn, argstoarray(arguments));
 
-				if(!stub.isStub)
+				if(!stub.isDefaultStub)
 					actualArgumentsShouldBeExpected(fn, stub.params, argstoarray(arguments));
 
 				if(stub.exception != undefined) {
@@ -183,16 +190,12 @@ var stub = exports.stub = function(o) {
 				var returnValue = undefined;
 
 				if(stub.returnValue != undefined)
-					returnValue = self.lastStub().returnValue;
+					returnValue = stub.returnValue;
 
 				if(returnValue != undefined)
 					return returnValue;
 			};
 
-			this.lastStub = function() {
-				return stubs[fn].list[stubs[fn].list.length - 1];
-			};
-			
 			this.fn = fn;
 			return this;
 		}
