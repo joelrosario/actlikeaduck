@@ -44,6 +44,26 @@ exports['All mocked expectations must be called.'] = function () {
 	}
 }
 
+exports['playback should automatically verify the mocked calls at the end of the test.'] = function () {
+	assert.ok((function() {
+		try {
+			actlikeaduck.mock({})
+				.expectCall("sound", "quacks").andReturn("it quacks")
+				.expectCall("sound", "quacks").andReturn("it quacks")
+				.expectCall("sound", "squeaks").andReturn("itSqueaks")
+				.playback(function(duck, mock) {
+					duck.sound("quacks");
+				});
+		} catch(e) {
+			["sound", "quacks", "squeaks"].forEach(function (token) {
+				assert.ok(e.message.indexOf(token) > -1, "token " + token + " not found in the error msg");
+			});
+
+			return true;
+		}
+	})(), "playback failed to verify all mocked calls at the end of the test.");
+}
+
 exports['A mocked operation to readContents should call the callback function passed to it as the second argument.'] = function () {
 	var file = {};
 	var called = false;
