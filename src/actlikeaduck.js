@@ -220,6 +220,11 @@ var mock = exports.mock = function (o) {
 
 			if(unInvokedExpectations.length > 0)
 				throw new Error(unInvokedExpectations);
+		},
+		
+		playback: function (fn) {
+			fn(this.mockedObj, this);
+			this.verifyMockedCalls();
 		}
 	};
 }
