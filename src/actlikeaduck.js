@@ -2,20 +2,32 @@ var sys = require('sys');
 
 function deepEquals(actual, expected)
 {
-    for(p in expected)
-    {
-        switch(typeof(expected[p]))
-        {
-                case 'object':
-                        if (!deepEquals(actual[p], expected[p])) { return false }; break;
-                case 'function':
-                        if (typeof(actual[p])=='undefined' || (p != 'equals' && expected[p].toString() != actual[p].toString())) { return false; }; break;
-                default:
-                        if (expected[p] != actual[p]) { return false; }
-        }
-    }
+	switch(typeof(expected))
+	{
+		case 'object':
+			for(p in expected)
+			{
+				switch(typeof(expected[p]))
+				{
+					case 'object':
+						if (!deepEquals(actual[p], expected[p])) { return false };
+						break;
+					case 'function':
+						if (typeof(actual[p])=='undefined' || (p != 'equals' && expected[p].toString() != actual[p].toString())) { return false; };
+						break;
+					default:
+						if (expected[p] != actual[p]) { return false; }
+				}
+			};
+			break;
+		case 'function':
+			if (typeof(actual)=='undefined' || (p != 'equals' && expected.toString() != actual.toString())) { return false; };
+			break;
+		default:
+			if (expected != actual) { return false; }
+	}
 
-    return true;
+	return true;
 }
 
 function tostr(arr) {
