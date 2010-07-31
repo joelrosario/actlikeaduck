@@ -116,6 +116,10 @@ var stub = exports.stub = function(o) {
 			return this;
 		},
 		
+		andThrow: function (e) {
+			this.lastStub().exception = e;
+		},
+		
 		findStub: function(args) {
 			for(var ctr in stubs[this.fn]) {
 				var stub = stubs[this.fn][ctr];
@@ -134,6 +138,10 @@ var stub = exports.stub = function(o) {
 			o[fn] = function() {
 				var stub = self.findStub(argstoarray(arguments));
 				actualArgumentsShouldBeExpected(fn, stub.params, argstoarray(arguments));
+
+				if(stub.exception != undefined) {
+					throw stub.exception;
+				}
 
 				if(stub.callback != undefined) {
 					arguments[stub.callback.index].apply(null, stub.callback.params);
