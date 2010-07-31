@@ -79,12 +79,14 @@ var stub = exports.stub = function(o) {
 
 	function stubCallAndParams(fn, params) {
 		if(stubs[fn] == undefined)
-			stubs[fn] = [];
+			stubs[fn] = {
+				list: []
+			};
 		
-		stubs[fn][stubs[fn].length] = {};
+		stubs[fn].list[stubs[fn].list.length] = { params: [] };
 		
 		if(params != 'undefined')
-			stubs[fn][stubs[fn].length - 1].params = params;
+			stubs[fn].list[stubs[fn].list.length - 1].params = params;
 	}
 
 	return {
@@ -120,14 +122,43 @@ var stub = exports.stub = function(o) {
 			this.lastStub().exception = e;
 		},
 		
+		defaultStub: function () {
+			return stubs[this.fn].defaultStub;
+		},
+
+		setDefaultStub: function (stub) {
+			stubs[this.fn].defaultStub = stub;
+		},
+		
+		withUnexpectedArgs: function (fn) {
+			if(this.defaultStub() == undefined) {
+				this.setDefaultStub({params: [], isStub: true});
+			}
+
+			delete stubs[this.fn].list[stubs[this.fn].list.length - 1];
+			stubs[this.fn].list.length = stubs[this.fn].list.length - 1;
+			
+			this.lastStub = function () {
+				return this.defaultStub();
+			};
+			
+			return this;
+		},
+		
 		findStub: function(args) {
-			for(var ctr in stubs[this.fn]) {
-				var stub = stubs[this.fn][ctr];
+			for(var ctr = 0; ctr < stubs[this.fn].list.length; ctr ++) {
+				var stub = stubs[this.fn].list[ctr];
 				
 				if(argumentsMatch(stub.params, args)) {
 					return stub;
 				}
 			}
+			
+			if(this.defaultStub() == 'undefined') {
+				throw new Error('No stub found for function ' + this.fn + ' with args ' + tostr(args));
+			}
+			
+			return this.defaultStub();
 		},
 		
 		expect: function(fn) {
@@ -137,7 +168,9 @@ var stub = exports.stub = function(o) {
 
 			o[fn] = function() {
 				var stub = self.findStub(argstoarray(arguments));
-				actualArgumentsShouldBeExpected(fn, stub.params, argstoarray(arguments));
+
+				if(!stub.isStub)
+					actualArgumentsShouldBeExpected(fn, stub.params, argstoarray(arguments));
 
 				if(stub.exception != undefined) {
 					throw stub.exception;
@@ -157,7 +190,7 @@ var stub = exports.stub = function(o) {
 			};
 
 			this.lastStub = function() {
-				return stubs[fn][stubs[fn].length - 1];
+				return stubs[fn].list[stubs[fn].list.length - 1];
 			};
 			
 			this.fn = fn;

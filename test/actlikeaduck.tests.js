@@ -106,22 +106,35 @@ exports['A stubbed operation to readContents should call the callback function p
 	assert.ok(called, "The callback function at arguments index 1 should have been called.");
 };
 
-exports['A stubbed operation to readContents may be stubbed to throw an exception to simulate a file that does not exist.'] = function () {
-	var file = {};
+function throwsException(test, exceptionMsg, message) {
 	var gotException = false;
 
-	actlikeaduck.stub(file).expectCall("readContents", "testfile.txt", function() { }).andThrow(new Error("file not found"));
-
 	try {
-		file.readContents("testfile.txt", function(err, data) { });
+		test();
 	} catch(e) {
-		if(e.message == "file not found")
-			gotException = true;
-		else
+		gotException = true;
+
+		if(exceptionMsg && e.message != exceptionMsg)
+			gotException = false;
+
+		if(gotException == false)
 			throw e;
 	}
 
-	assert.ok(gotException, "The stubbed exception should have been thrown.");
+	if(message)
+		assert.ok(gotException, message);
+	else
+		assert.ok(gotException, "The stubbed exception should have been thrown.");
+}
+
+exports['A stubbed operation to readContents may be stubbed to throw an exception to simulate a file that does not exist.'] = function () {
+	var file = {};
+	
+	actlikeaduck.stub(file).expectCall("readContents", "testfile.txt", function() { }).andThrow(new Error("file not found"));
+
+	throwsException(function () {
+		file.readContents("testfile.txt", function(err, data) { });
+	}, "file not found");
 };
 
 exports['A readContents operation may be stubbed to throw an exception to simulate a file that does not exist.'] = function () {
@@ -154,3 +167,19 @@ exports['An operation may be stubbed out with different responses for different 
 
 	assert.equal(2, called);
 };
+
+exports['An operation may be stubbed out with a default response.'] = function () {
+	var file = {};
+	var called = false;
+
+	actlikeaduck.stub(file)
+		.expect("readContents").withArgs("testfile.txt", function() { }).executeCallback(1, null, "hello world").andReturn(true)
+		.expect("readContents").withUnexpectedArgs().andThrow(new Error("file not found"));
+
+	file.readContents("testfile.txt", function (val, data) { assert.equal("hello world", data); called = true;});
+	assert.ok(called, "readContents(testfile.txt) should have yielded content.");
+
+	throwsException(function () {
+		file.readContents("testfile234.txt", function () { });
+	}, "file not found", "The default response should have been triggered, which was to throw a file not found exception.")
+}
