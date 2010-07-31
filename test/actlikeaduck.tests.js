@@ -14,7 +14,7 @@ exports['Mock duck to quack.'] = function () {
 
 	actlikeaduck.mock(duck).expect("sound").withArgs({is: "quacks"}).andReturn("it quacks");
 	assert.equal("it quacks", duck.sound({is: "quacks"}));
-}
+};
 
 exports['A mocked duck can quack only as many times as the quack call has been mocked'] = function () {
 	var duck = {};
@@ -26,7 +26,7 @@ exports['A mocked duck can quack only as many times as the quack call has been m
 	assert.equal("it quacks", duck.sound("quacks"));
 	assert.throws(function () { duck.sound("quacks"); }, "it quacks");
 	assert.throws(function () { duck.sound("quacks"); }, "it quacks");
-}
+};
 
 exports['All mocked expectations must be called.'] = function () {
 	var duck = {};
@@ -42,7 +42,7 @@ exports['All mocked expectations must be called.'] = function () {
 			assert.ok(e.message.indexOf(token) > -1);
 		});
 	}
-}
+};
 
 exports['playback should automatically verify the mocked calls at the end of the test.'] = function () {
 	assert.ok((function() {
@@ -62,7 +62,7 @@ exports['playback should automatically verify the mocked calls at the end of the
 			return true;
 		}
 	})(), "playback failed to verify all mocked calls at the end of the test.");
-}
+};
 
 exports['A mocked operation to readContents should call the callback function passed to it as the second argument.'] = function () {
 	var file = {};
@@ -71,7 +71,7 @@ exports['A mocked operation to readContents should call the callback function pa
 	actlikeaduck.mock(file).expectCall("readContents", "testfile.txt", function() { }).executeCallback(1, null, "hello world");
 	file.readContents("testfile.txt", function(err, data) { assert.equal(null, err); assert.equal("hello world", data); called = true; });
 	assert.ok(called);
-}
+};
 
 exports['A mock object should be available from the stub repo.'] = function () {
 	var file = {};
@@ -79,7 +79,7 @@ exports['A mock object should be available from the stub repo.'] = function () {
 
 	var mockRepo = actlikeaduck.mock(file).expectCall("readContents", "testfile.txt", function() { }).executeCallback(1, null, "hello world");
 		assert.deepEqual(file, mockRepo.mockedObj);
-}
+};
 
 exports['Stub frog to croak.'] = function () {
 	var frog = {};
@@ -88,14 +88,14 @@ exports['Stub frog to croak.'] = function () {
 
 	actlikeaduck.stub(frog).expect("sound").withArgs("croak").andReturn("it croaks");
 	assert.equal("it croaks", frog.sound("croak"));
-}
+};
 
 exports['A stubbed frog can croak any number of times.'] = function () {
 	var frog = {};
 	actlikeaduck.stub(frog).expectCall("sound", "croak").andReturn("it croaks");
 	assert.equal("it croaks", frog.sound("croak"));
 	assert.equal("it croaks", frog.sound("croak"));
-}
+};
 
 exports['A stubbed operation to readContents should call the callback function passed to it as the second argument.'] = function () {
 	var file = {};
@@ -104,7 +104,34 @@ exports['A stubbed operation to readContents should call the callback function p
 	actlikeaduck.stub(file).expectCall("readContents", "testfile.txt", function() { }).executeCallback(1, null, "hello world");
 	file.readContents("testfile.txt", function(err, data) { assert.equal(null, err); assert.equal("hello world", data); called = true; });
 	assert.ok(called, "The callback function at arguments index 1 should have been called.");
-}
+};
+
+exports['A stubbed operation to readContents may be stubbed to throw an exception to simulate a file that does not exist.'] = function () {
+	var file = {};
+	var gotException = false;
+
+	actlikeaduck.stub(file).expectCall("readContents", "testfile.txt", function() { }).andThrow(new Error("file not found"));
+
+	try {
+		file.readContents("testfile.txt", function(err, data) { });
+	} catch(e) {
+		if(e.message == "file not found")
+			gotException = true;
+		else
+			throw e;
+	}
+
+	assert.ok(gotException, "The stubbed exception should have been thrown.");
+};
+
+exports['A readContents operation may be stubbed to throw an exception to simulate a file that does not exist.'] = function () {
+	var file = {};
+	var called = false;
+
+	actlikeaduck.stub(file).expectCall("readContents", "testfile.txt", function() { }).executeCallback(1, null, "hello world");
+	file.readContents("testfile.txt", function(err, data) { assert.equal(null, err); assert.equal("hello world", data); called = true; });
+	assert.ok(called, "The callback function at arguments index 1 should have been called.");
+};
 
 exports['A stubbed object should be available from the stub repo.'] = function () {
 	var file = {};
@@ -112,7 +139,7 @@ exports['A stubbed object should be available from the stub repo.'] = function (
 
 	var stubRepo = actlikeaduck.stub(file).expectCall("readContents", "testfile.txt", function() { }).executeCallback(1, null, "hello world");
 	assert.deepEqual(file, stubRepo.stubbedObj);
-}
+};
 
 exports['An operation may be stubbed out with different responses for different parameters.'] = function () {
 	var file = {};
@@ -126,4 +153,4 @@ exports['An operation may be stubbed out with different responses for different 
 	assert.ok(file.readContents("testfile2.txt", function(err, data) { assert.equal(null, err); assert.equal("hello world 2", data); called++; }));
 
 	assert.equal(2, called);
-}
+};
