@@ -30,14 +30,18 @@ function deepEquals(actual, expected)
 	return true;
 }
 
-function tostr(arr) {
+function tostr(val) {
+	if(typeof val == 'object') {
+		return sys.inspect(val);
+	}
+
 	var str = "";
-	
+
 	for(var ctr = 0; ctr < arr.length; ctr ++) {
 		if(str.length > 0) str += ", ";
-		str += arr[ctr];
+		str += (typeof arr[ctr] == 'object' ? tostr(val) : arr[ctr]);
 	}
-	
+
 	return str;
 }
 
