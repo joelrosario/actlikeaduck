@@ -107,6 +107,9 @@ var stub = exports.stub = function(o) {
 		},
 		
 		executeCallback: function(indexOfCallback) {
+			if((typeof this.lastStub().params[indexOfCallback]) != 'function')
+				throw new Error("A function is not expected at position " + indexOfCallback + ".");
+
 			var callbackSpec = {
 				index: indexOfCallback,
 				params: (arguments.length > 1 ? argstoarray(arguments).splice(1) : [])
@@ -232,6 +235,9 @@ var mock = exports.mock = function (o) {
 		},
 		
 		executeCallback: function(indexOfCallback) {
+			if((typeof expectations[this.fn][expectations[this.fn].length - 1].params[indexOfCallback]) != 'function')
+				throw new Error("A function is not expected at position " + indexOfCallback + ".");
+
 			var callbackSpec = {
 				index: indexOfCallback,
 				params: (arguments.length > 1 ? argstoarray(arguments).splice(1) : [])
