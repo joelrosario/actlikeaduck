@@ -172,6 +172,13 @@ exports['An operation should signal an error if asked to stub a callback for a p
 	}, "A function is not expected at position 1.");
 }
 
+exports['An operation successfully stub out a callback when being stubbed for unexpected arguments.'] = function() {
+	var file = {};
+	var called = false;
+
+	actlikeaduck.stub(file).expect("readContents").withUnexpectedArgs().executeCallback(1, null, "hello world");
+}
+
 exports['An operation may be stubbed out with different responses for different parameters.'] = function () {
 	var file = {};
 	var called = 0;

@@ -109,7 +109,7 @@ var stub = exports.stub = function(o) {
 		},
 		
 		executeCallback: function(indexOfCallback) {
-			if((typeof this.lastStub().params[indexOfCallback]) != 'function')
+			if((typeof this.lastStub().params[indexOfCallback]) != 'function' && this.lastStub().isDefaultStub != true)
 				throw new Error("A function is not expected at position " + indexOfCallback + ".");
 
 			var callbackSpec = {
