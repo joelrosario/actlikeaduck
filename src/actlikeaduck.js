@@ -1,5 +1,7 @@
 var sys = require('sys');
 
+var anyFunction = exports.anyFunction = function () { };
+
 function deepEquals(actual, expected)
 {
 	switch(typeof(expected))

@@ -193,7 +193,7 @@ exports['Different operations may be stubbed out at the same time.'] = function 
 	actlikeaduck.stub(file)
 		.expect("readContents").withArgs("testfile.txt", function() { }).executeCallback(1, null, "hello world").andReturn(true)
 		.expect("readContents").withArgs("testfile2.txt", function() { }).executeCallback(1, null, "hello world 2").andReturn(true)
-		.expect("stat").withArgs("testfile.txt", function () { }).executeCallback(1, undefined, "file");
+		.expect("stat").withArgs("testfile.txt", actlikeaduck.anyFunction).executeCallback(1, undefined, "file");
 
 	assert.ok(file.readContents("testfile.txt", function(err, data) { assert.equal(null, err); assert.equal("hello world", data); called++; }));
 	assert.ok(file.readContents("testfile2.txt", function(err, data) { assert.equal(null, err); assert.equal("hello world 2", data); called++; }));
@@ -228,6 +228,6 @@ exports['An operation may be stubbed out with a default response.'] = function (
 	assert.ok(called, "readContents(testfile.txt) should have yielded content.");
 
 	throwsException(function () {
-		file.readContents("testfile234.txt", function () { });
+		file.readContents("testfile234.txt", actlikeaduck.anyFunction);
 	}, "file not found", "The default response should have been triggered, which was to throw a file not found exception.")
 }
