@@ -1,4 +1,5 @@
 var sys = require('sys');
+var assert = require('assert');
 
 var anyFunction = exports.anyFunction = function () { };
 
@@ -316,3 +317,18 @@ var mock = exports.mock = function (o) {
 		}
 	};
 }
+
+var expectACall = exports.expectACall = function (times, fn) {
+	var calledCount = 0;
+	
+	var expectedCall = function () {
+		fn.apply(null, arguments);
+		calledCount++;
+	}
+	
+	expectedCall.verifyCall = function() {
+		assert.equal(times, calledCount, "A function should have been called " + calledCount + " time(s).");
+	};
+	
+	return expectedCall
+};

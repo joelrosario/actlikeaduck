@@ -111,6 +111,23 @@ exports['A mock object should be available from the stub repo.'] = function () {
 		assert.deepEqual(file, mockRepo.mockedObj);
 };
 
+exports['One can set an expectation on a call to a function which does not belong to an object.'] = function () {
+	var called = false;
+	
+	var fn = actlikeaduck.expectACall(1, function () {
+		called = true;
+	});
+	
+	throwsException(function () {
+		fn.verifyCall();
+	});
+
+	fn();
+	fn.verifyCall();
+	
+	assert.ok(called);
+}
+
 exports['Stub frog to croak.'] = function () {
 	var frog = {};
 	actlikeaduck.stub(frog).expectCall("sound", "croak").andReturn("it croaks");
